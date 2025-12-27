@@ -14,10 +14,12 @@ import "ag-grid-community/styles/ag-theme-quartz.css";
 import { PermissionGuard } from "../../components/PermissionGuard";
 import { StatusBadge } from "../../components/StatusBadge";
 import { mockVehicles } from "../../services/mockVehicleData";
+import { useUser } from "../../hooks/usePermissions";
 import type { Vehicle } from "../../types";
 
 export const Vehicles = () => {
   const navigate = useNavigate();
+  const user = useUser();
   const [searchText, setSearchText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,12 +39,19 @@ export const Vehicles = () => {
   }, []);
 
   const filteredVehicles = useMemo(() => {
+    let vehicles = mockVehicles;
+    if (user?.role === "driver") {
+      vehicles = mockVehicles.filter(
+        (vehicle) => vehicle.assignedDriver === user.name
+      );
+    }
+
     if (!searchText.trim()) {
-      return mockVehicles;
+      return vehicles;
     }
 
     const searchLower = searchText.toLowerCase();
-    return mockVehicles.filter(
+    return vehicles.filter(
       (vehicle) =>
         vehicle.vehicleId.toLowerCase().includes(searchLower) ||
         vehicle.make.toLowerCase().includes(searchLower) ||
@@ -51,7 +60,7 @@ export const Vehicles = () => {
         vehicle.assignedDriver.toLowerCase().includes(searchLower) ||
         vehicle.status.toLowerCase().includes(searchLower)
     );
-  }, [searchText]);
+  }, [searchText, user]);
 
   const columnDefs: ColDef<Vehicle>[] = useMemo(
     () => [

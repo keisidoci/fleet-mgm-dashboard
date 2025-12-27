@@ -43,7 +43,7 @@ export const mockVehicles: Vehicle[] = [
     status: "Active",
     currentMileage: 15892,
     lastServiceDate: "2024-12-15",
-    assignedDriver: "Sarah Lee",
+    assignedDriver: "Driver User",
   },
   {
     vehicleId: "VEH-005",
@@ -54,7 +54,7 @@ export const mockVehicles: Vehicle[] = [
     status: "Active",
     currentMileage: 44236,
     lastServiceDate: "2024-10-13",
-    assignedDriver: "Sarah Lee",
+    assignedDriver: "Driver User",
   },
   {
     vehicleId: "VEH-006",
@@ -65,7 +65,7 @@ export const mockVehicles: Vehicle[] = [
     status: "Active",
     currentMileage: 117258,
     lastServiceDate: "2024-10-27",
-    assignedDriver: "John Smith",
+    assignedDriver: "Driver User",
   },
   {
     vehicleId: "VEH-007",
@@ -76,7 +76,7 @@ export const mockVehicles: Vehicle[] = [
     status: "Maintenance",
     currentMileage: 36380,
     lastServiceDate: "2024-10-18",
-    assignedDriver: "Robert Johnson",
+    assignedDriver: "Driver User",
   },
   {
     vehicleId: "VEH-008",
@@ -87,7 +87,7 @@ export const mockVehicles: Vehicle[] = [
     status: "Active",
     currentMileage: 85917,
     lastServiceDate: "2024-01-09",
-    assignedDriver: "John Smith",
+    assignedDriver: "Driver User",
   },
   {
     vehicleId: "VEH-009",
