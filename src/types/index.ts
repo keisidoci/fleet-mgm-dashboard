@@ -38,3 +38,40 @@ export interface Vehicle {
   lastServiceDate: string;
   assignedDriver: string;
 }
+
+export type ServiceType =
+  | "Oil Change"
+  | "Tire Replacement"
+  | "Brake Service"
+  | "Engine Repair"
+  | "Battery Replacement"
+  | "Inspection"
+  | "General Maintenance";
+
+export interface MaintenanceRecord {
+  id: string;
+  vehicleId: string;
+  date: string;
+  serviceType: ServiceType;
+  cost: number;
+  mileage: number;
+  technicianNotes: string;
+}
+
+export interface FuelRecord {
+  id: string;
+  vehicleId: string;
+  date: string;
+  gallons: number;
+  cost: number;
+  mileage: number;
+  location: string;
+}
+
+export interface AssignmentHistory {
+  id: string;
+  vehicleId: string;
+  driverName: string;
+  assignedDate: string;
+  unassignedDate: string | null; // null means currently assigned
+}
