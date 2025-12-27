@@ -24,3 +24,17 @@ export interface Permission {
   canDelete: boolean;
   canView: boolean;
 }
+
+export type VehicleStatus = "Active" | "Retired" | "Maintenance";
+
+export interface Vehicle {
+  vehicleId: string;
+  make: string;
+  model: string;
+  year: number;
+  vin: string;
+  status: VehicleStatus;
+  currentMileage: number;
+  lastServiceDate: string;
+  assignedDriver: string;
+}
