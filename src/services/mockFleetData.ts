@@ -1,6 +1,6 @@
 import type { Vehicle } from "../types";
 
-export const mockVehicles: Vehicle[] = [
+export const mockFleetData: Vehicle[] = [
   {
     vehicleId: "VEH-001",
     make: "Hyundai",

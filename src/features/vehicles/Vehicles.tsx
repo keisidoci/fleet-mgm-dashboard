@@ -13,7 +13,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import { PermissionGuard } from "../../components/PermissionGuard";
 import { StatusBadge } from "../../components/StatusBadge";
-import { mockVehicles } from "../../services/mockVehicleData";
+import { mockFleetData } from "../../services/mockFleetData";
 import { useUser } from "../../hooks/usePermissions";
 import type { Vehicle } from "../../types";
 
@@ -39,9 +39,9 @@ export const Vehicles = () => {
   }, []);
 
   const filteredVehicles = useMemo(() => {
-    let vehicles = mockVehicles;
+    let vehicles = mockFleetData;
     if (user?.role === "driver") {
-      vehicles = mockVehicles.filter(
+      vehicles = mockFleetData.filter(
         (vehicle) => vehicle.assignedDriver === user.name
       );
     }
