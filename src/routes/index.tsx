@@ -35,6 +35,12 @@ const Admin = lazy(() =>
   }))
 );
 
+const VehicleDetail = lazy(() =>
+  import('../features/vehicles/VehicleDetail').then((module) => ({
+    default: module.VehicleDetail,
+  }))
+);
+
 export const router = createBrowserRouter([
   {
     path: '/login',
@@ -59,6 +65,10 @@ export const router = createBrowserRouter([
       {
         path: 'vehicles',
         element: <ProtectedRoute><Vehicles /></ProtectedRoute>,
+      },
+      {
+        path: 'vehicles/:vehicleId',
+        element: <ProtectedRoute><VehicleDetail /></ProtectedRoute>,
       },
       {
         path: 'drivers',
