@@ -1,5 +1,6 @@
 import { useParams, useNavigate, Navigate } from "react-router-dom";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { HiChevronLeft } from "react-icons/hi";
 import { PermissionGuard } from "../../components/PermissionGuard";
 import { StatusBadge } from "../../components/StatusBadge";
 import { getVehicleById } from "../../services/vehicleService";
@@ -9,11 +10,14 @@ import {
   calculateFuelStats,
 } from "../../services/mockFuelData";
 import { getAssignmentHistoryByVehicleId } from "../../services/mockAssignmentData";
-import type { ServiceType } from "../../types";
+import type { ServiceType, Vehicle } from "../../types";
 
 export const VehicleDetail = () => {
   const { vehicleId } = useParams<{ vehicleId: string }>();
   const navigate = useNavigate();
+  const [vehicle, setVehicle] = useState<Vehicle | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [maintenanceFilter, setMaintenanceFilter] = useState<{
     serviceType: ServiceType | "All";
     dateFrom: string;
@@ -24,9 +28,28 @@ export const VehicleDetail = () => {
     dateTo: "",
   });
 
-  const vehicle = useMemo(() => {
-    if (!vehicleId) return undefined;
-    return getVehicleById(vehicleId);
+  // Load vehicle data
+  useEffect(() => {
+    const loadVehicle = async () => {
+      if (!vehicleId) {
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+      setError(null);
+      try {
+        const vehicleData = await getVehicleById(vehicleId);
+        setVehicle(vehicleData);
+      } catch (err) {
+        console.error("Failed to load vehicle:", err);
+        setError("Failed to load vehicle data");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadVehicle();
   }, [vehicleId]);
 
   const maintenanceRecords = useMemo(() => {
@@ -77,6 +100,41 @@ export const VehicleDetail = () => {
     return <Navigate to="/vehicles" replace />;
   }
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="px-4 py-6 sm:px-0">
+        <div className="bg-white shadow rounded-lg p-6">
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mb-4"></div>
+            <p className="text-gray-600">Loading vehicle details...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="px-4 py-6 sm:px-0">
+        <div className="bg-white shadow rounded-lg p-6">
+          <div className="text-center py-12">
+            <h2 className="text-2xl font-bold text-red-600 mb-2">Error</h2>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <button
+              onClick={() => navigate("/vehicles")}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+            >
+              Back to Vehicles
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Vehicle not found
   if (!vehicle) {
     return (
       <div className="px-4 py-6 sm:px-0">
@@ -116,21 +174,9 @@ export const VehicleDetail = () => {
         <div className="mb-6">
           <button
             onClick={() => navigate("/vehicles")}
-            className="text-indigo-600 hover:text-indigo-700 mb-4 flex items-center text-sm font-medium"
+            className="text-white bg-indigo-600 hover:bg-indigo-700 mb-4 flex items-center text-sm font-medium"
           >
-            <svg
-              className="w-4 h-4 mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
+            <HiChevronLeft className="w-4 h-4 mr-2" />
             Back to Vehicles
           </button>
           <div className="flex justify-between items-start">
@@ -144,9 +190,7 @@ export const VehicleDetail = () => {
             </div>
             <PermissionGuard requireEdit>
               <button
-                onClick={() => {
-                  alert("Edit vehicle functionality will be implemented here.");
-                }}
+                onClick={() => navigate(`/vehicles/${vehicleId}/edit`)}
                 className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium"
               >
                 Edit Vehicle

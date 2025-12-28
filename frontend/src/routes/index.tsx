@@ -41,6 +41,12 @@ const VehicleDetail = lazy(() =>
   }))
 );
 
+const VehicleForm = lazy(() =>
+  import('../features/vehicles/VehicleForm').then((module) => ({
+    default: module.VehicleForm,
+  }))
+);
+
 export const router = createBrowserRouter([
   {
     path: '/login',
@@ -69,6 +75,14 @@ export const router = createBrowserRouter([
       {
         path: 'vehicles/:vehicleId',
         element: <ProtectedRoute><VehicleDetail /></ProtectedRoute>,
+      },
+      {
+        path: 'vehicles/new',
+        element: <ProtectedRoute><VehicleForm /></ProtectedRoute>,
+      },
+      {
+        path: 'vehicles/:vehicleId/edit',
+        element: <ProtectedRoute><VehicleForm /></ProtectedRoute>,
       },
       {
         path: 'drivers',
