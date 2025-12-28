@@ -1,5 +1,6 @@
 import { useParams, useNavigate, Navigate } from "react-router-dom";
 import { useMemo, useState } from "react";
+import { HiChevronLeft } from "react-icons/hi";
 import { PermissionGuard } from "../../components/PermissionGuard";
 import { StatusBadge } from "../../components/StatusBadge";
 import { getVehicleById } from "../../services/vehicleService";
@@ -116,21 +117,9 @@ export const VehicleDetail = () => {
         <div className="mb-6">
           <button
             onClick={() => navigate("/vehicles")}
-            className="text-indigo-600 hover:text-indigo-700 mb-4 flex items-center text-sm font-medium"
+            className="text-white bg-indigo-600 hover:bg-indigo-700 mb-4 flex items-center text-sm font-medium"
           >
-            <svg
-              className="w-4 h-4 mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
+            <HiChevronLeft className="w-4 h-4 mr-2" />
             Back to Vehicles
           </button>
           <div className="flex justify-between items-start">
