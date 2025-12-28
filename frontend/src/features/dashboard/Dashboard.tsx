@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   BarChart,
@@ -25,16 +25,45 @@ import {
   getRecentActivity,
 } from "../../services/dashboardService";
 import { mockMaintenanceRecords } from "../../services/mockMaintenanceData";
-import { mockFleetData } from "../../services/mockFleetData";
+import { getAllVehicles } from "../../services/vehicleService";
+import type { Vehicle } from "../../types";
 
 const COLORS = ["#4F46E5", "#10B981", "#F59E0B", "#EF4444"];
 
 export const Dashboard = () => {
   const user = useUser();
   const navigate = useNavigate();
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const stats = useMemo(() => getDashboardStats(user), [user]);
-  const recentActivity = useMemo(() => getRecentActivity(user), [user]);
+  // Fetch vehicles from API
+  useEffect(() => {
+    const loadVehicles = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await getAllVehicles();
+        setVehicles(data);
+      } catch (err) {
+        console.error("Failed to load vehicles:", err);
+        setError("Failed to load vehicles. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadVehicles();
+  }, []);
+
+  const stats = useMemo(
+    () => getDashboardStats(vehicles, user),
+    [vehicles, user]
+  );
+  const recentActivity = useMemo(
+    () => getRecentActivity(vehicles, user),
+    [vehicles, user]
+  );
 
   const statusChartData = [
     { name: "Active", value: stats.activeVehicles },
@@ -46,13 +75,13 @@ export const Dashboard = () => {
   const userVehicleIds = useMemo(() => {
     if (user?.role === "driver") {
       return new Set(
-        mockFleetData
+        vehicles
           .filter((v) => v.assignedDriver === user.name)
           .map((v) => v.vehicleId)
       );
     }
     return null; // null means show all vehicles
-  }, [user]);
+  }, [vehicles, user]);
 
   // (last 6 months)
   const maintenanceCostData = useMemo(() => {
@@ -84,6 +113,40 @@ export const Dashboard = () => {
     }
     return months;
   }, [userVehicleIds]);
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="px-4 py-6 sm:px-0">
+        <div className="bg-white shadow rounded-lg p-6">
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mb-4"></div>
+            <p className="text-gray-600">Loading dashboard data...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="px-4 py-6 sm:px-0">
+        <div className="bg-white shadow rounded-lg p-6">
+          <div className="text-center py-12">
+            <h2 className="text-2xl font-bold text-red-600 mb-2">Error</h2>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="px-4 py-6 sm:px-0">

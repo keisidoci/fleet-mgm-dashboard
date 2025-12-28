@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AgGridReact } from "ag-grid-react";
 import type {
@@ -13,7 +13,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import { PermissionGuard } from "../../components/PermissionGuard";
 import { StatusBadge } from "../../components/StatusBadge";
-import { mockFleetData } from "../../services/mockFleetData";
+import { getAllVehicles } from "../../services/vehicleService";
 import { useUser } from "../../hooks/usePermissions";
 import type { Vehicle } from "../../types";
 
@@ -24,43 +24,49 @@ export const Vehicles = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedRows, setSelectedRows] = useState<Vehicle[]>([]);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
 
-  // Simulate API call delay
-  const loadVehicles = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      setIsLoading(false);
-    } catch {
-      setError("Failed to load vehicles. Please try again.");
-      setIsLoading(false);
-    }
+  // Load vehicles from API on mount
+  useEffect(() => {
+    const loadVehicles = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await getAllVehicles();
+        setVehicles(data);
+        setIsLoading(false);
+      } catch {
+        setError("Failed to load vehicles. Please try again.");
+        setIsLoading(false);
+      }
+    };
+    loadVehicles();
   }, []);
 
   const filteredVehicles = useMemo(() => {
-    let vehicles = mockFleetData;
+    let filtered = vehicles;
     if (user?.role === "driver") {
-      vehicles = mockFleetData.filter(
+      filtered = vehicles.filter(
         (vehicle) => vehicle.assignedDriver === user.name
       );
     }
 
     if (!searchText.trim()) {
-      return vehicles;
+      return filtered;
     }
 
     const searchLower = searchText.toLowerCase();
-    return vehicles.filter(
+    return filtered.filter(
       (vehicle) =>
         vehicle.vehicleId.toLowerCase().includes(searchLower) ||
         vehicle.make.toLowerCase().includes(searchLower) ||
         vehicle.model.toLowerCase().includes(searchLower) ||
         vehicle.vin.toLowerCase().includes(searchLower) ||
-        vehicle.assignedDriver.toLowerCase().includes(searchLower) ||
+        (vehicle.assignedDriver?.toLowerCase().includes(searchLower) ??
+          false) ||
         vehicle.status.toLowerCase().includes(searchLower)
     );
-  }, [searchText, user]);
+  }, [searchText, user, vehicles]);
 
   const columnDefs: ColDef<Vehicle>[] = useMemo(
     () => [
@@ -204,7 +210,7 @@ export const Vehicles = () => {
             </div>
             <p className="text-gray-600 mb-4">{error}</p>
             <button
-              onClick={loadVehicles}
+              onClick={() => window.location.reload()}
               className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium"
             >
               Retry
@@ -274,6 +280,14 @@ export const Vehicles = () => {
               {selectedRows.length > 0 && ` • ${selectedRows.length} selected`}
             </p>
           </div>
+          <PermissionGuard requireCreate>
+            <button
+              onClick={() => navigate("/vehicles/new")}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+            >
+              Add Vehicle
+            </button>
+          </PermissionGuard>
         </div>
 
         <div className="border-t border-gray-200 pt-6">
@@ -282,7 +296,7 @@ export const Vehicles = () => {
             <div className="mb-4 flex gap-2">
               <PermissionGuard requireEdit>
                 <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                  Edit Selected ({selectedRows.length})
+                  Some bulk action ({selectedRows.length})
                 </button>
               </PermissionGuard>
               <PermissionGuard requireDelete>

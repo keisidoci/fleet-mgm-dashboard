@@ -26,6 +26,8 @@ export interface Permission {
 }
 
 export type VehicleStatus = "Active" | "Retired" | "Maintenance";
+export type FuelType = "Gasoline" | "Diesel" | "Electric" | "Hybrid";
+export type Transmission = "Automatic" | "Manual";
 
 export interface Vehicle {
   vehicleId: string;
@@ -37,6 +39,14 @@ export interface Vehicle {
   currentMileage: number;
   lastServiceDate: string;
   assignedDriver: string;
+  // Optional fields
+  licensePlate?: string;
+  color?: string;
+  purchaseDate?: string;
+  fuelType?: FuelType;
+  transmission?: Transmission;
+  purchasePrice?: number;
+  notes?: string;
 }
 
 export type ServiceType =
