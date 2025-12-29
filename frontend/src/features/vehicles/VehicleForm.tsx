@@ -152,13 +152,16 @@ export const VehicleForm = () => {
         }
 
         case "vin": {
-          const strValue = String(value || "");
-          if (!strValue || strValue.trim() === "") {
+          const strValue = String(value || "").trim();
+          if (!strValue) {
             return "VIN is required";
           }
-          const vinRegex = /^[A-HJ-NPR-Z0-9]{17}$/i;
+          if (strValue.length !== 17) {
+            return "VIN must be exactly 17 characters";
+          }
+          const vinRegex = /^[A-Z0-9]{17}$/i;
           if (!vinRegex.test(strValue)) {
-            return "VIN must be exactly 17 alphanumeric characters";
+            return "VIN must contain only letters (A-Z) and numbers (0-9)";
           }
           return undefined;
         }
@@ -244,10 +247,6 @@ export const VehicleForm = () => {
         isValid = false;
       }
     });
-
-    // VIN duplicate check (async validation would be better, but keeping sync for now)
-    // The backend will also validate this
-
     setErrors(newErrors);
     return isValid;
   };
@@ -266,20 +265,22 @@ export const VehicleForm = () => {
 
     try {
       setIsLoadingVehicle(true);
+      setSubmitError(null);
+      setSubmitSuccess(false);
+
       let savedVehicle: Vehicle;
 
       if (isEditMode && vehicleId) {
-        // Update existing vehicle
         savedVehicle = await updateVehicle(vehicleId, formData);
       } else {
-        // Create new vehicle
         savedVehicle = await createVehicle(formData);
       }
 
       setSubmitSuccess(true);
       setIsDirty(false);
 
-      // Navigate after successful save
+      window.dispatchEvent(new CustomEvent("vehiclesUpdated"));
+
       setTimeout(() => {
         if (isEditMode && vehicleId) {
           navigate(`/vehicles/${vehicleId}`);
@@ -294,6 +295,7 @@ export const VehicleForm = () => {
           ? error.message
           : "Failed to save vehicle. Please try again.";
       setSubmitError(errorMessage);
+      setSubmitSuccess(false);
     } finally {
       setIsLoadingVehicle(false);
     }
@@ -327,9 +329,8 @@ export const VehicleForm = () => {
       return false;
     }
 
-    if (Object.keys(errors).length > 0) {
-      return false;
-    }
+    const hasErrors = Object.values(errors).some(Boolean);
+    if (hasErrors) return false;
 
     const makeError = validateField("make", formData.make);
     const modelError = validateField("model", formData.model);
@@ -343,8 +344,6 @@ export const VehicleForm = () => {
     if (makeError || modelError || yearError || vinError || mileageError) {
       return false;
     }
-
-    // VIN duplicate check - backend will handle this
 
     return true;
   }, [formData, errors, validateField]);

@@ -41,6 +41,16 @@ export const Vehicles = () => {
       }
     };
     loadVehicles();
+
+    // Listen for vehicle updates (when new vehicle is created)
+    const handleVehiclesUpdated = () => {
+      loadVehicles();
+    };
+
+    window.addEventListener("vehiclesUpdated", handleVehiclesUpdated);
+    return () => {
+      window.removeEventListener("vehiclesUpdated", handleVehiclesUpdated);
+    };
   }, []);
 
   const filteredVehicles = useMemo(() => {
@@ -117,17 +127,18 @@ export const Vehicles = () => {
         filter: "agTextColumnFilter",
       },
       {
-        field: "status",
         headerName: "Status",
         width: 130,
-        cellRenderer: (params: ICellRendererParams<Vehicle>) => {
-          if (!params.value) return "";
-          return <StatusBadge status={params.value as Vehicle["status"]} />;
-        },
+        valueGetter: (params) => params.data?.status ?? "",
+        cellRenderer: (params: ICellRendererParams<Vehicle>) =>
+          params.value ? <StatusBadge status={params.value} /> : "",
         filter: "agTextColumnFilter",
+        filterValueGetter: (params) =>
+          String(params.data?.status ?? "").toLowerCase(),
         filterParams: {
-          filterOptions: ["equals"],
-          defaultOption: "equals",
+          filterOptions: ["contains", "equals"],
+          defaultOption: "contains",
+          textFormatter: (value: string) => value?.toLowerCase(),
         },
       },
       {

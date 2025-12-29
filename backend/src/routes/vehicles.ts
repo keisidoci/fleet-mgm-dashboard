@@ -28,7 +28,7 @@ router.post("/", (req: Request, res: Response) => {
 
     if (
       vehicleData.vin.length !== 17 ||
-      !/^[A-HJ-NPR-Z0-9]{17}$/i.test(vehicleData.vin)
+      !/^[A-Z0-9]{17}$/i.test(vehicleData.vin)
     ) {
       return res.status(400).json({
         message: "VIN must be exactly 17 alphanumeric characters",
