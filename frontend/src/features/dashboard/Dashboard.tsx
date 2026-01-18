@@ -1,4 +1,3 @@
-import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   BarChart,
@@ -19,100 +18,14 @@ import {
   HiX,
   HiExclamationCircle,
 } from "react-icons/hi";
-import { useUser } from "../../hooks/usePermissions";
-import {
-  getDashboardStats,
-  getRecentActivity,
-} from "../../services/dashboardService";
-import { mockMaintenanceRecords } from "../../services/mockMaintenanceData";
-import { getAllVehicles } from "../../services/vehicleService";
-import type { Vehicle } from "../../types";
+import { useDashboardData } from "../../hooks/useDashboardData";
+import StatsBadge from "./StatsBadge";
 
 const COLORS = ["#4F46E5", "#10B981", "#F59E0B", "#EF4444"];
 
 export const Dashboard = () => {
-  const user = useUser();
-  const navigate = useNavigate();
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Fetch vehicles from API
-  useEffect(() => {
-    const loadVehicles = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const data = await getAllVehicles();
-        setVehicles(data);
-      } catch (err) {
-        console.error("Failed to load vehicles:", err);
-        setError("Failed to load vehicles. Please try again.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadVehicles();
-  }, []);
-
-  const stats = useMemo(
-    () => getDashboardStats(vehicles, user),
-    [vehicles, user]
-  );
-  const recentActivity = useMemo(
-    () => getRecentActivity(vehicles, user),
-    [vehicles, user]
-  );
-
-  const statusChartData = [
-    { name: "Active", value: stats.activeVehicles },
-    { name: "Maintenance", value: stats.inMaintenance },
-    { name: "Retired", value: stats.retiredVehicles },
-  ];
-
-  // Get vehicle IDs for filtering maintenance records (for drivers)
-  const userVehicleIds = useMemo(() => {
-    if (user?.role === "driver") {
-      return new Set(
-        vehicles
-          .filter((v) => v.assignedDriver === user.name)
-          .map((v) => v.vehicleId)
-      );
-    }
-    return null; // null means show all vehicles
-  }, [vehicles, user]);
-
-  // (last 6 months)
-  const maintenanceCostData = useMemo(() => {
-    const months = [];
-    const today = new Date();
-
-    for (let i = 5; i >= 0; i--) {
-      const date = new Date(today);
-      date.setMonth(today.getMonth() - i);
-      const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
-      const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-
-      const cost = mockMaintenanceRecords
-        .filter((record) => {
-          const recordDate = new Date(record.date);
-          const inDateRange =
-            recordDate >= monthStart && recordDate <= monthEnd;
-          // For drivers, only include their vehicles
-          const isUserVehicle =
-            userVehicleIds === null || userVehicleIds.has(record.vehicleId);
-          return inDateRange && isUserVehicle;
-        })
-        .reduce((sum, record) => sum + record.cost, 0);
-
-      months.push({
-        month: date.toLocaleDateString("en-US", { month: "short" }),
-        cost: cost || 0,
-      });
-    }
-    return months;
-  }, [userVehicleIds]);
+  const navigate = useNavigate()
+  const {isLoading, error, user, stats, statusChartData, recentActivity, maintenanceCostData} = useDashboardData()
 
   // Loading state
   if (isLoading) {
@@ -166,24 +79,25 @@ export const Dashboard = () => {
         } gap-4 mb-6`}
       >
         {user?.role !== "driver" && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500">
-                  Total Vehicles
-                </p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">
-                  {stats.totalVehicles}
-                </p>
-              </div>
-              <div className="bg-indigo-100 rounded-full p-3">
-                <HiCheckCircle className="w-6 h-6 text-indigo-600" />
-              </div>
-            </div>
-          </div>
+          // <div className="bg-white rounded-lg shadow p-6">
+          //   <div className="flex items-center justify-between">
+          //     <div>
+          //       <p className="text-sm font-medium text-gray-500">
+          //         Total Vehicles
+          //       </p>
+          //       <p className="text-3xl font-bold text-gray-900 mt-2">
+          //         {stats.totalVehicles}
+          //       </p>
+          //     </div>
+          //     <div className="bg-indigo-100 rounded-full p-3">
+          //       <HiCheckCircle className="w-6 h-6 text-indigo-600" />
+          //     </div>
+          //   </div>
+          // </div>
+          <StatsBadge title="Total vehicles" value={stats.totalVehicles} icon={<HiCheckCircle className="w-6 h-6 text-indigo-600" />}/>
         )}
 
-        <div className="bg-white rounded-lg shadow p-6">
+        {/* <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-500">
@@ -199,7 +113,12 @@ export const Dashboard = () => {
               <HiCheckCircle className="w-6 h-6 text-green-600" />
             </div>
           </div>
-        </div>
+        </div> */}
+          <StatsBadge title={user?.role === "driver" ? "My Vehicles" : "Active Vehicles"} value= {user?.role === "driver"
+                  ? stats.totalVehicles
+                  : stats.activeVehicles} 
+                  icon={<HiCheckCircle className="w-6 h-6 text-indigo-600" />}/>
+
 
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between">

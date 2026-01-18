@@ -9,7 +9,7 @@ export class VehicleStore {
   }
 
   create(
-    input: Omit<Vehicle, "vehicleId"> & Partial<Pick<Vehicle, "vehicleId">>
+    input: Omit<Vehicle, "vehicleId"> & Partial<Vehicle>
   ): Vehicle {
     const vehicleId = input.vehicleId ?? `VEH-${Date.now()}`;
 

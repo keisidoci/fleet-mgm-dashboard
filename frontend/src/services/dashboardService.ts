@@ -15,13 +15,13 @@ export interface DashboardStats {
 
 export interface RecentActivity {
   recentVehicles: Vehicle[];
-  recentMaintenance: Array<{
+  recentMaintenance: {
     id: string;
     vehicleId: string;
     date: string;
     serviceType: string;
     vehicleName: string;
-  }>;
+  }[];
   recentAssignments: Array<{
     id: string;
     vehicleId: string;

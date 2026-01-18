@@ -18,7 +18,7 @@ export const Login = () => {
     return null;
   }
 
-  const from = (location.state as any)?.from?.pathname || "/dashboard";
+  // const from = (location.state as any)?.from?.pathname || "/dashboard";
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -26,7 +26,7 @@ export const Login = () => {
 
     try {
       await dispatch(login({ username, password })).unwrap();
-      navigate(from, { replace: true });
+      navigate("/dashboard", { replace: true });
     } catch (err: any) {
       setError(err || "Invalid username or password");
     }
